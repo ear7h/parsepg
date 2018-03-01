@@ -1,24 +1,20 @@
-//go:generate pigeon -o pg_gen.go pg.peg
-
 package main
 
 import (
 	"fmt"
+
+	"github.com/ear7h/parsepg/parser"
 )
-
-type Query string
-
-type Queries []Query
 
 func main() {
 	fmt.Println("hello")
 
-	h, err := ParseFile("test_queries.sql")
+	h, err := parser.ParseFile("test_queries.sql")
 	if err != nil {
 		panic(err)
 	}
 
-	queries, ok := h.([]Query)
+	queries, ok := h.([]parser.Query)
 	if !ok {
 		panic("no tokens received")
 	}

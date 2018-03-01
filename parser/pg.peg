@@ -1,5 +1,5 @@
 {
-package main
+package parser
 
 import (
     "reflect"
@@ -26,7 +26,8 @@ queries <- v:(query)* NLEOF {
 }
 
 
-query <- ([^;])* ';' {
+query <- q: ([^;])* ';' ws: whitespace? {
+    log.Printf("\tq: %v\nws: %v",q,ws)
     return Query(c.text), nil
 }
 
@@ -34,8 +35,13 @@ query <- ([^;])* ';' {
 
 NLEOF <- NL / EOF
 
-NL <- ("\r\n" / "\n\r" / "\r" / "\n")
+comment <- "--" non_newline*
+whitespace <- (_+ / comment)
 
 _ "space" <- ("\t" / [\pZ] )
+h_ "horizontal space" <- [ \t\f]
+non_newline <- !NL
+NL <- ("\r\n" / "\n\r" / "\r" / "\n")
+
 
 EOF <- !.
