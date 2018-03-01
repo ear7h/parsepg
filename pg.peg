@@ -1,0 +1,41 @@
+{
+package main
+
+import (
+    "reflect"
+)
+
+}
+
+
+queries <- v:(query)* NLEOF {
+    varr, ok := v.([]interface{})
+    if !ok {
+        panic("not ok")
+    }
+
+    arr := make([]Query, len(varr))
+    for i := range varr {
+        arr[i], ok = varr[i].(Query)
+        if !ok {
+            panic("not ok1")
+        }
+    }
+
+    return arr, nil
+}
+
+
+query <- ([^;])* ';' {
+    return Query(c.text), nil
+}
+
+
+
+NLEOF <- NL / EOF
+
+NL <- ("\r\n" / "\n\r" / "\r" / "\n")
+
+_ "space" <- ("\t" / [\pZ] )
+
+EOF <- !.
