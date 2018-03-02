@@ -1,5 +1,5 @@
 {
-package main
+package parser
 
 import (
     "reflect"
@@ -26,7 +26,8 @@ queries <- v:(query)* newline {
 }
 
 
-query <- ([^;])* ';' {
+query <- q: ([^;])* ';' ws: whitespace? {
+    log.Printf("\tq: %v\nws: %v",q,ws)
     return Query(c.text), nil
 }
 
@@ -52,15 +53,14 @@ file_line <- ([^;] / [^--])*
  */
 
 
-
-space <- [ \t\n\r\f]
-horiz_space <- [ \t\f]
+_ "space" <- [ \t\n\r\f]
+_h "horizontal space" <- [ \t\f]
 newline <- [\n\r]
 non_newline <- [^\n\r]
 
-comment <- ("--" non_newline*)
+comment <- "--" non_newline*
 
-whitespace (space+ / comment)
+whitespace <- (_+ / comment)
 
 /*
  * SQL requires at least one newline in the whitespace separating
