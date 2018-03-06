@@ -8,6 +8,17 @@ import (
 }
 
 
+/*
+
+key locations in gram.y:
+599 - keywords
+10680 - select statements
+14181 - Names and constants
+
+
+*/
+
+
 queries <- v:(query)* newline {
     varr, ok := v.([]interface{})
     if !ok {
