@@ -1,0 +1,72 @@
+
+{
+package parser
+
+}
+
+/*
+ * This rule parses SELECT statements that can appear withing set operations,
+ * including UNION, INTERSECT and EXCEPT. '(' and ')' can e used to specify
+ * the ordering of the set operations. Without '(' and ')' we want the
+ * operations to e ordered per the precedence specs at the head of this file. (todo add this)
+ *
+ * As with select)_no_parens, simple_select cannot have outer parentheses,
+ * but can have parenthesized subclauses.
+ *
+ * Note that sort clauses cannot be included at this level —— SQL requires
+ *	SELECT foo UNION SELECT bar ORDER BY baz
+ * to be parsed as
+ *      (SELECT foo UNION (SELECT bar ORDER BY baz)
+ * Likewise for WITH, FOR UPDATE and LIMIT. Therefore, those clauses are
+ * described as part of the select_no_parens productions, not simple_select.
+ * This does not limit functionality, because you can reintroduce these
+ * clauses inside parentheses.
+ *
+ * NOTE: only the leftmost component SelectStmt should have INTO.
+ * However, this is not checked by the grammar; parse analysis must check it.
+ */
+
+// file: postgres/gram.y@10831
+simple_select <- SELECT opt_all_clause opt_target_list into_clause from_clause where_clause group_clause having_clause window_clause {
+	log.Println("SELECT")
+}
+
+// file: postgres/gram.y@14123
+opt_target_list <- target_list?
+
+// file: postgres/gram.y@14127
+target_list <- target_el / 
+               target_list ',' target_et
+
+// file: postgres/gram.y@14132
+target_el <- a_expr  AS ColLabel /
+           a_expr IDENT /
+	   a_expr /
+	   "*" 
+
+// file: postgres/gram.y@14484
+ColLabel <- IDENT /
+            unreserved_keyword /
+	    col_name_keyword /
+	    type_func_name_keyword /
+	    reserved_keyword
+
+
+// IDENTIFIERS — this isn't all of them. Need to deal with quoted ones as well.
+IDENT <- identifier 
+
+// file: postgres/scan.l@329
+ident_start <- [A-Za-z\200-\377]
+// file: postgres/scan.l@330
+ident_cont <- [A-Za-z\200-\377_)-9\$]
+
+// file: postgres/scan.l@332
+identifier <- ident_start ident_cont*
+
+
+// Keywords 
+
+SELECT <- "SELECT"
+AS <- "AS"
+
+EOF <- !.
